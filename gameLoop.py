@@ -1,7 +1,7 @@
 import pygame
 import random
 
-from screen import screen
+from screen import screen, screen_height
 from screen import clock
 from objects.ball import ball
 from objects.sticks import stick1, stick2
@@ -15,10 +15,13 @@ running = True
 ball_x = 300 - ball.get_width() // 2
 ball_y = random.randint(0, 600 - ball.get_height())
 
-ball_v = 4
+ball_v_x = 4
+ball_v_y = 4
+
+ball_rect = ball.get_rect()
 
 # sticks
-stick_v = 4
+stick_v = 8
 
 # GAME LOOP
 
@@ -31,32 +34,58 @@ while running:
     keys = pygame.key.get_pressed()
 
     # player1 movements
-    if keys[pygame.K_w]:
+    if keys[pygame.K_w] and stick1.y >= 0:
         stick1.y -= stick_v
-    elif keys[pygame.K_s]:
+    elif keys[pygame.K_s] and stick1.bottom < screen_height:
         stick1.y += stick_v
 
     # player2 movements
-    if keys[pygame.K_UP]:
+    if keys[pygame.K_UP] and stick2.y >= 0:
         stick2.y -= stick_v
-    elif keys[pygame.K_DOWN]:
+    elif keys[pygame.K_DOWN] and stick2.bottom < screen_height:
         stick2.y += stick_v
 
     # DRAW
     screen.fill((255, 0, 255))
-    pygame.draw.rect(screen, (0,0,255), stick1)
+    pygame.draw.rect(screen, (0,0,133), stick1)
     pygame.draw.rect(screen, (255,0,0), stick2)
     screen.blit(ball, (ball_x, ball_y))
 
     # BALL MOVEMENTS
-    ball_y += ball_v 
-    ball_x += ball_v
+    ghost_rect = ball_rect.copy()
+    ball_y += ball_v_y 
+    ball_x += ball_v_x
+    ball_rect.x = ball_x
+    ball_rect.y = ball_y
+
     if ball_y >= 600 - ball.get_height()  or ball_y <= 0:
-        ball_v = ball_v * (-1)
+        ball_v_y = ball_v_y * (-1)
 
     if ball_x <= -ball.get_width() or ball_x >= 600:
         ball_x = 300 - ball.get_width() // 2
         ball_y = random.randint(0, 600 - ball.get_height())
+
+        ball_v_x = random.choice([4, -4])
+        ball_v_y = random.choice([4, -4])
+
+    # HITBOX
+    if ball_rect.colliderect(stick1) and ball_v_x < 0:
+        if ghost_rect.bottom <= stick1.top:
+            ball_v_y = ball_v_y * -1
+        elif ghost_rect.top >= stick1.bottom:
+            ball_v_y = ball_v_y * -1
+        else:
+             ball_v_x = ball_v_x * -1
+
+    if ball_rect.colliderect(stick2) and ball_v_x > 0:
+            if ghost_rect.bottom <= stick2.top:
+                ball_v_y = ball_v_y * -1
+            elif ghost_rect.top >= stick2.bottom:
+                ball_v_y = ball_v_y * -1 
+            else:
+                ball_v_x = ball_v_x * -1
+
+
     
     clock.tick(60)
     
