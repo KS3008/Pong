@@ -1,7 +1,7 @@
 import pygame
 import random
 
-from screen import screen, screen_height
+from screen import screen, screen_height, screen_width
 from screen import clock
 from objects.ball import ball
 from objects.sticks import stick1, stick2
@@ -9,6 +9,11 @@ from objects.sticks import stick1, stick2
 pygame.init()
 
 running = True
+
+# COUNTERS
+game_font = pygame.font.Font(None, 90)
+count1 = 0
+count2 = 0
 
 # POSITIONS
 # ball
@@ -47,6 +52,9 @@ while running:
 
     # DRAW
     screen.fill((255, 0, 255))
+    scores = f"{count1}      {count2}"
+    scores_print = game_font.render(str(scores), True, (255,255,255))
+    screen.blit(scores_print, (screen_width / 2 - scores_print.width / 2, 50))
     pygame.draw.rect(screen, (0,0,133), stick1)
     pygame.draw.rect(screen, (255,0,0), stick2)
     screen.blit(ball, (ball_x, ball_y))
@@ -61,7 +69,19 @@ while running:
     if ball_y >= 600 - ball.get_height()  or ball_y <= 0:
         ball_v_y = ball_v_y * (-1)
 
-    if ball_x <= -ball.get_width() or ball_x >= 600:
+    
+    # PLAYER 1 points
+    if ball_x <= -ball.get_width():
+        count2 += 1
+        ball_x = 300 - ball.get_width() // 2
+        ball_y = random.randint(0, 600 - ball.get_height())
+    
+        ball_v_x = random.choice([4, -4])
+        ball_v_y = random.choice([4, -4])
+
+    
+    if ball_x >= screen_height:
+        count1 += 1
         ball_x = 300 - ball.get_width() // 2
         ball_y = random.randint(0, 600 - ball.get_height())
 
